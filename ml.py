@@ -143,36 +143,20 @@ if uploaded_file is not None:
 
 
 
-    target_col = st.text_input("⚪Enter target column name:")
-
-
-    if target_col in df.columns:
-        y_raw = df[target_col]
-        X_raw = df.drop(columns=[target_col])
-        X_raw = X_raw.loc[:, X_raw.nunique() < len(X_raw)]
-
-        st.success(f"Target column set to: {target_col}")
-    else:
-        st.warning("⚠️ Please enter a valid column name.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    st.header("🔷 target column :")
+    target_col = st.selectbox("⚪ enter Target Column:", df.columns)    
+    st.success(f"✅ Target column set to: {target_col}")
 
     y_raw = df[target_col]
     X_raw = df.drop(columns=[target_col])   
+    if pd.api.types.is_numeric_dtype(y_raw) and y_raw.nunique() > 10:
+        st.warning("⟵ Please use a Regression model")
+    else:
+        st.warning("⟵ Please use a Classification model")
+
+    
+
+
 
     
     y_le = None
@@ -317,14 +301,7 @@ if uploaded_file is not None:
             feature_selector = SelectKBest(score_func=score_func, k=k_value)
         feature_selector=feature_selector    
      
-    st.header("🔷  Validation")
-    val_method = st.radio("Validation method", ("Train/Test Split", "Cross-Validation"), key="val_method")
-    num = st.number_input("Random state", 42, key="main_random") 
-    if val_method=="Train/Test Split" :
-        testsize = st.slider("Test size (for supervised)", 0.1, 0.5, 0.25, key="main_testsize")
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=testsize, random_state=num)
-    if val_method=="Cross-Validation" :
-        cv = st.slider("Number of CV folds", 2, 10, 5, key="main_cv")   
+      
             
       #  x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=testsize,random_state=num)
     
@@ -333,6 +310,15 @@ if uploaded_file is not None:
     st.sidebar.header("1) learning type")
     choice = st.sidebar.radio("Choose learning type", ("Supervised", "Unsupervised"))          
     if choice == "Supervised":
+        st.header("🔷  Validation")
+        val_method = st.radio("Validation method", ("Train/Test Split", "Cross-Validation"), key="val_method")
+        num = st.number_input("Random state", 42, key="main_random") 
+        if val_method=="Train/Test Split" :
+            testsize = st.slider("Test size (for supervised)", 0.1, 0.5, 0.25, key="main_testsize")
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=testsize, random_state=num)
+        if val_method=="Cross-Validation" :
+            cv = st.slider("Number of CV folds", 2, 10, 5, key="main_cv") 
+
     
         sup_type = st.sidebar.radio("task ", ("Regression","Classification"))
         model = None  
@@ -751,7 +737,7 @@ if uploaded_file is not None:
 
 
         try:
-            pca_vis = PCA(n_components=2, random_state=num)
+            pca_vis = PCA(n_components=2)
             reduced = pca_vis.fit_transform(transformed)
             fig, ax = plt.subplots()
             scatter = ax.scatter(reduced[:, 0], reduced[:, 1], c=labels, cmap="tab10")
