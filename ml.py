@@ -150,9 +150,9 @@ if uploaded_file is not None:
     y_raw = df[target_col]
     X_raw = df.drop(columns=[target_col])   
     if pd.api.types.is_numeric_dtype(y_raw) and y_raw.nunique() > 10:
-        st.warning("⟵ Please use a Regression model")
+        st.warning("⟵ use a Regression model")
     else:
-        st.warning("⟵ Please use a Classification model")
+        st.warning("⟵ use a Classification model")
 
     
 
