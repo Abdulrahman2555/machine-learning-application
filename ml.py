@@ -150,9 +150,9 @@ if uploaded_file is not None:
     y_raw = df[target_col]
     X_raw = df.drop(columns=[target_col])   
     if pd.api.types.is_numeric_dtype(y_raw) and y_raw.nunique() > 10:
-        st.warning("⟵ use a Regression model")
+        st.warning("⟵ Please use a Regression model")
     else:
-        st.warning("⟵ use a Classification model")
+        st.warning("⟵ Please use a Classification model")
 
     
 
@@ -305,19 +305,19 @@ if uploaded_file is not None:
             
       #  x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=testsize,random_state=num)
     
-
+    st.header("🔷  Validation")
+    val_method = st.radio("Validation method", ("Train/Test Split", "Cross-Validation"), key="val_method")
+    num = st.number_input("Random state", 42, key="main_random") 
+    if val_method=="Train/Test Split" :
+        testsize = st.slider("Test size (for supervised)", 0.1, 0.5, 0.25, key="main_testsize")
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=testsize, random_state=num)
+    if val_method=="Cross-Validation" :
+        cv = st.slider("Number of CV folds", 2, 10, 5, key="main_cv") 
 
     st.sidebar.header("1) learning type")
     choice = st.sidebar.radio("Choose learning type", ("Supervised", "Unsupervised"))          
     if choice == "Supervised":
-        st.header("🔷  Validation")
-        val_method = st.radio("Validation method", ("Train/Test Split", "Cross-Validation"), key="val_method")
-        num = st.number_input("Random state", 42, key="main_random") 
-        if val_method=="Train/Test Split" :
-            testsize = st.slider("Test size (for supervised)", 0.1, 0.5, 0.25, key="main_testsize")
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=testsize, random_state=num)
-        if val_method=="Cross-Validation" :
-            cv = st.slider("Number of CV folds", 2, 10, 5, key="main_cv") 
+
 
     
         sup_type = st.sidebar.radio("task ", ("Regression","Classification"))
@@ -774,7 +774,8 @@ if uploaded_file is not None:
         if submitted:
             input_df = pd.DataFrame([input_data])
 
-            if val_method == "Cross-Validation":
+                
+            if val_method == "Cross-Validation" :
         
                 cv_preds = cross_val_predict(model, x, y, cv=cv)
                 last_pred = cv_preds[-1]
@@ -788,7 +789,7 @@ if uploaded_file is not None:
                 st.success(f"🎯 Cross-Validation Prediction: {last_pred_decoded}")
 
             else:
-              
+            
                 df_temp = preprocessor.transform(input_df)
 
                 df_temp = pd.DataFrame(df_temp, columns=new_columns)
@@ -799,7 +800,7 @@ if uploaded_file is not None:
                 
                 pred_encoded = model.predict(df_temp)  # مصفوفة (حتى لو عنصر واحد)
 
-  
+
                 if choice == "Supervised" and sup_type == "Classification" and y_is_encoded and y_le is not None:
                     try:
                         pred_decoded = y_le.inverse_transform(pred_encoded.astype(int))
@@ -808,7 +809,7 @@ if uploaded_file is not None:
 
                     st.success(f"🎉 Prediction: {pred_decoded[0]}")
 
-          
+        
                     if hasattr(model["model"], "predict_proba"):
                         proba = model.predict_proba(df_temp)
                         class_labels = model["model"].classes_
@@ -843,9 +844,11 @@ if uploaded_file is not None:
                         ax2.set_xlabel("Iteration")
                         ax2.set_ylabel("Loss")
                         st.pyplot(fig2)
+              
 
 
-        
+
+
 
 
 
